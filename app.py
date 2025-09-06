@@ -1,38 +1,31 @@
 import streamlit as st
 from groq import Groq
-from audio_recorder_streamlit import audio_recorder
+from st_audiorec import st_audiorec
 import tempfile
 
-# 🔑 Direct API Key for testing
+# 🔑 Test API key (replace with your own)
 GROQ_API_KEY = "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"
 client = Groq(api_key=GROQ_API_KEY)
 
-st.title("🎙️ Groq Whisper Live Recorder")
-st.write("Click the mic to record and get transcription.")
+st.title("🎙️ Groq Whisper Recorder")
+st.write("Record your voice and get a transcription!")
 
 # Record Audio
-audio_bytes = audio_recorder(
-    text="Click to record",
-    recording_color="#e63946",
-    neutral_color="#f1faee",
-    icon_name="microphone",
-    icon_size="3x",
-)
+wav_audio = st_audiorec()
 
-if audio_bytes:
-    st.audio(audio_bytes, format="audio/wav")
+if wav_audio is not None:
+    st.audio(wav_audio, format="audio/wav")
     st.info("Processing transcription...")
 
-    # 🔥 Save audio to a temporary file
+    # Save to temp file
     with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as temp_file:
-        temp_file.write(audio_bytes)
+        temp_file.write(wav_audio)
         temp_filename = temp_file.name
 
     try:
-        # Send to Groq Whisper API
-        with open(temp_filename, "rb") as file:
+        with open(temp_filename, "rb") as f:
             transcription = client.audio.transcriptions.create(
-                file=(temp_filename, file.read()),
+                file=("audio.wav", f.read()),
                 model="whisper-large-v3-turbo",
                 response_format="verbose_json",
             )

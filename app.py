@@ -4,7 +4,7 @@ from groq import Groq
 from audio_recorder_streamlit import audio_recorder
 
 # Load API Key
-GROQ_API_KEY = os.getenv("GROQ_API_KEY", "YOUR_API_KEY_HERE")
+GROQ_API_KEY = os.getenv("GROQ_API_KEY", "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")
 client = Groq(api_key=GROQ_API_KEY)
 
 st.title("🎙️ Groq Whisper Live Recorder")

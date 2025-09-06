@@ -1,16 +1,19 @@
-import os
+
+#GROQ_API_KEY = "gsk_your_real_key_here"
+GROQ_API_KEY = "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"
+GROQ_API_KEY = st.secrets["GROQ_API_KEY"]
+
 import streamlit as st
 from groq import Groq
 from audio_recorder_streamlit import audio_recorder
 
-# Load API Key
-GROQ_API_KEY = os.getenv("GROQ_API_KEY", "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")
+# 🔐 Load API Key securely
+GROQ_API_KEY = st.secrets["GROQ_API_KEY"]
 client = Groq(api_key=GROQ_API_KEY)
 
 st.title("🎙️ Groq Whisper Live Recorder")
-st.write("Click the mic to record your voice, then get transcription using `whisper-large-v3-turbo`.")
+st.write("Click the mic to record and get transcription.")
 
-# Record audio
 audio_bytes = audio_recorder(
     text="Click to record",
     recording_color="#e63946",
@@ -20,20 +23,17 @@ audio_bytes = audio_recorder(
 )
 
 if audio_bytes:
-    # Save recorded file
-    with open("temp_audio.wav", "wb") as f:
-        f.write(audio_bytes)
-
-    st.audio("temp_audio.wav")
+    st.audio(audio_bytes, format="audio/wav")
     st.info("Processing transcription...")
 
-    # Send to Groq API
-    with open("temp_audio.wav", "rb") as file:
+    try:
         transcription = client.audio.transcriptions.create(
-            file=("temp_audio.wav", file.read()),
+            file=("audio.wav", audio_bytes),
             model="whisper-large-v3-turbo",
             response_format="verbose_json",
         )
+        st.success("✅ Transcription Complete")
+        st.text_area("Transcription", transcription.text, height=300)
 
-    st.success("✅ Transcription Complete")
-    st.text_area("Transcription", transcription.text, height=300)
+    except Exception as e:
+        st.error(f"❌ Error: {str(e)}")
